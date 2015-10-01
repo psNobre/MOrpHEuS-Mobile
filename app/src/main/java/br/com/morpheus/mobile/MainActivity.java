@@ -1,37 +1,52 @@
 package br.com.morpheus.mobile;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+
+
+import br.com.morpheus.mobile.model.Paciente;
 import br.com.morpheus.mobile.model.User;
 
 
 public class MainActivity extends ActionBarActivity {
-
-    private TextView textView1;
-    private TextView textView2;
-    private TextView textView3;
-    private TextView textView4;
+    private Button loginButton;
+    private EditText loginEditText;
+    private EditText senhaEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        loginButton = (Button)findViewById(R.id.button);
 
+        loginEditText = (EditText)findViewById(R.id.etLogin);
+        senhaEditText = (EditText)findViewById(R.id.etSenha);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        new HttpRequestTask().execute();
-
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new HttpRequestLogin().execute(loginEditText.getText().toString(),senhaEditText.getText().toString());
+            }
+        });
     }
 
     @Override
@@ -56,15 +71,21 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public class HttpRequestTask extends AsyncTask<Void,Void,User> {
+    public class HttpRequestLogin extends AsyncTask<String,Void,User> {
+
         @Override
-        protected User doInBackground(Void... params) {
-            User user = null;
+        protected User doInBackground(String... params) {
+            User user = new User();
+
+            HashMap<String,String> authUser = new HashMap<>();
+            authUser.put("login", params[0]);
+            authUser.put("senha", params[1]);
+
             try {
-                final String url = "http://192.168.25.28:8080/showUser";
+                final String url = "http://192.168.25.28:8080/loginUserMobile";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                user = restTemplate.getForObject(url, User.class);
+                user = restTemplate.postForObject(url, authUser ,User.class);
                 return user;
             } catch (Exception e) {
                 Log.e("MainActivity", e.getMessage(), e);
@@ -75,18 +96,30 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(User user) {
             super.onPostExecute(user);
-            textView1 = (TextView)findViewById(R.id.textView1);
-            textView2 = (TextView)findViewById(R.id.textView2);
-            textView3 = (TextView)findViewById(R.id.textView3);
-            textView4 = (TextView)findViewById(R.id.textView4);
 
-            textView1.setText(user.getNome());
-            textView2.setText(user.getEmail());
-            textView3.setText(user.getLogin());
-            textView4.setText(user.getSenha());
+            if (user.getLogin().equals("-1")){
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                alertDialog.setTitle("MOrpHEuS");
+                alertDialog.setMessage("Usuário ou Senha não encontrado, tente novamente!");
+                alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        onResume();
+                    }
+                });
+
+                alertDialog.show();
+
+            }else {
+                Intent intent = new Intent(MainActivity.this, PacienteActivity.class);
+                startActivity(intent);
+                finish();
+            }
+
 
         }
+
     }
+
 }
 
 
