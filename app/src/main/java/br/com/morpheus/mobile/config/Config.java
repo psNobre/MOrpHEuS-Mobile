@@ -4,16 +4,22 @@ package br.com.morpheus.mobile.config;
  * Created by pedronobre on 01/10/2015.
  */
 public class Config {
-    /**
-     * Tipos de Usuários.
-     * **/
-    public static final String TYPE_MEDICO = "Medico";
-    public static final String TYPE_PACIENTE = "Paciente";
 
+    //CASA:192.168.25.28 GREat:10.101.45.52
+    public static final String SERVER_IP = "192.168.25.28";
+    public static final String SERVER_PORT = "8080";
+
+    /**
+     * Shared Preferences
+     * **/
+    public static final String MY_PREFERENCES = "morpheusPreference";
+    public static final String KEY_USER_LOGADO = "userLogado";
+    public static final String KEY_USER_STATUS = "statusUser";
     /**
      * Ramificações da Árvore de Contexto.
      * 			ambient.health.device.arduino.EXEMPLO
      * **/
+
     public static final String CIB_BODY_TEMPERATURE = "ambient.health.device.arduino.bodytemperature";
     public static final String CIB_ELECTROCARDIOGRAM = "ambient.health.device.arduino.electrocardiogram";
     public static final String CIB_MYOCARDIOGRAM = "ambient.health.device.arduino.myocardiogram";
