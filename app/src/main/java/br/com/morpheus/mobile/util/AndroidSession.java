@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import br.com.morpheus.mobile.config.Config;
 import br.com.morpheus.mobile.model.User;
 
-
 /**
  * Created by pedronobre on 01/10/2015.
  */

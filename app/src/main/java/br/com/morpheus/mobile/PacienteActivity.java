@@ -1,13 +1,11 @@
 package br.com.morpheus.mobile;
 
-
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import br.com.morpheus.mobile.config.Config;
-import br.com.morpheus.mobile.model.Paciente;
 import br.com.morpheus.mobile.model.User;
 import br.com.morpheus.mobile.util.AndroidSession;
 

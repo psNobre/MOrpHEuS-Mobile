@@ -6,7 +6,7 @@ package br.com.morpheus.mobile.config;
 public class Config {
 
     //CASA:192.168.25.28 GREat:10.101.45.52
-    public static final String SERVER_IP = "192.168.25.28";
+    public static final String SERVER_IP = "10.101.45.52";
     public static final String SERVER_PORT = "8080";
 
     /**
