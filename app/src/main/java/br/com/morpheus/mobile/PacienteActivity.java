@@ -11,8 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import org.androidannotations.annotations.UiThread;
 
 import java.util.ArrayList;
 
@@ -20,7 +19,7 @@ import br.com.morpheus.mobile.adapters.AdapterCardSensor;
 import br.com.morpheus.mobile.context.ContextKey;
 import br.com.morpheus.mobile.context.ContextManager;
 import br.com.morpheus.mobile.listeners.ContextListener;
-import br.com.morpheus.mobile.listeners.SensorCACListener;
+import br.com.morpheus.mobile.listeners.LoccamConnectedListener;
 import br.com.morpheus.mobile.model.Sensor;
 import br.com.morpheus.mobile.util.AndroidSession;
 import br.com.morpheus.mobile.util.RecyclerItemClickListener;
@@ -32,22 +31,27 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
     private AdapterCardSensor adapterCardSensor;
 
     private AndroidSession androidSession;
-    private ArrayList<SensorCACListener> sensorCACListenerArrayList;
     private ArrayList<Sensor> sensors;
-    private ArrayList<String> sensorsContext;
+    private Sensor sensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paciente);
 
+        ContextManager.getInstance().connect(this.getApplicationContext(),
+                getResources().getResourcePackageName(R.string.app_name), new LoccamConnectedListener() {
+                    @Override
+                    public void onLoccamConnected() {
+                        ContextManager.getInstance().registerListener(PacienteActivity.this);
+                    }
+                });
+
         recyclerView = (RecyclerView) findViewById(R.id.card_list_view);
         recyclerView.setHasFixedSize(true);
-
         androidSession = new AndroidSession(PacienteActivity.this);
         sensors = new ArrayList<>();
-        sensorCACListenerArrayList = new ArrayList<>();
-
+//////////////////////////////////////////////////////////////////////////////////////
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
@@ -67,15 +71,15 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
                 Toast.makeText(getApplicationContext(), "Long Click", Toast.LENGTH_SHORT).show();
             }
         }));
-
+///////////////////////////////////////////////////////////////////////////////////
     }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        ContextManager.getInstance().init(ContextKey.getContextkeyGetCacs());
-        ContextManager.getInstance().registerListener(this);
+
+
     }
 
     @Override
@@ -107,7 +111,7 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
         //noinspection SimplifiableIfStatement
         if (id == R.id.sair) {
             androidSession.logoutSystem();
-            Intent intent = new Intent(this,MainActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
             return true;
@@ -118,28 +122,32 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
 
     @Override
     public void onContextReady(String data) {
-        Log.d("ON CONTEXT READY", "ACTIVITY SENSORS");
-        data = data.trim();
 
-        try {
-            JSONArray array = new JSONArray(data);
-            sensors.clear();
-            for (int i = 0; i < array.length(); i++) {
-                String cac = array.getString(i);
-                if (cac.contains("context")) {
-                    sensorsContext.add(cac);
-                }
-            }
-
-            for (SensorCACListener listener : sensorCACListenerArrayList) {
-                if (listener == null) {//errado
-                    listener.onCACsUpdated(sensorsContext);
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (sensors.isEmpty()) { //tá dando mas tá errado mudar condição
+            getSensores(data);
         }
 
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapterCardSensor.notifyDataSetChanged();
+
+            }
+        });
+
+    }
+
+    public void getSensores(String data){
+        String format = data.replace("[", "").replace("]", "").replaceAll("[\"\']", "");
+
+        int counter = format.split(",").length - 1;
+        ArrayList<String> cacs = new ArrayList<>();
+
+        for (int i = 0; i < counter + 1; i++) {
+            cacs.add(format.split(",")[i]);
+            sensor = ContextKey.getSensorInfo(cacs.get(i));
+            sensors.add(sensor);
+        }
     }
 
     @Override
@@ -147,11 +155,4 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
         return ContextKey.getContextkeyGetCacs();
     }
 
-    public void registerSensorCACListener(SensorCACListener sensorCACListener) {
-        sensorCACListenerArrayList.add(sensorCACListener);
-    }
-
-    public void unregisterSensorCACListener(SensorCACListener sensorCACListener) {
-        sensorCACListenerArrayList.add(sensorCACListener);
-    }
 }
