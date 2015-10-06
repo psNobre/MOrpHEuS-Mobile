@@ -1,6 +1,7 @@
 package br.com.morpheus.mobile;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,7 +21,9 @@ import android.widget.ProgressBar;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.HashMap;
+
 import br.com.morpheus.mobile.config.Config;
 import br.com.morpheus.mobile.model.User;
 import br.com.morpheus.mobile.util.AndroidSession;
@@ -29,7 +32,6 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class MainActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
-    private ProgressBar pbLogin;
     private Button loginButton;
     private EditText loginEditText;
     private EditText senhaEditText;
@@ -40,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
-        pbLogin =  (ProgressBar)findViewById(R.id.progressBarLogin);
-        pbLogin.setVisibility(View.INVISIBLE);
 
         androidSession = new AndroidSession(MainActivity.this);
         if (androidSession.isLoggedIn()) {
@@ -63,12 +63,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (isConnected()) {
-                    Log.d(TAG,"Executando HttpRequest para login...");
+                    Log.d(TAG, "Executando HttpRequest para login...");
                     new HttpRequestLogin(MainActivity.this).execute(loginEditText.getText().toString(), senhaEditText.getText().toString());
                 } else {
-                    Log.e(TAG,"Dispositivos sem conexão...");
+                    Log.e(TAG, "Dispositivos sem conexão...");
                     AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                    alertDialog.setTitle("MOrpHEuS Alerta!");
+                    alertDialog.setIcon(R.drawable.ic_alert_circle_grey600_36dp);
+                    alertDialog.setTitle("MOrpHEuS");
                     alertDialog.setMessage("Dispositivo sem Conexão");
                     alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -92,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.sair) {
-            androidSession.logoutSystem();
-            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -115,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
     public class HttpRequestLogin extends AsyncTask<String, Void, User> {
         private final String TAG = this.getClass().getName();
         private Context context;
+        private ProgressDialog pgDialog = new ProgressDialog(MainActivity.this);
 
         public HttpRequestLogin(Context context) {
             this.context = context;
@@ -123,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pbLogin.setVisibility(View.VISIBLE);
+            pgDialog.setTitle("Conectando...");
+            pgDialog.show();
         }
 
         @Override
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             authUser.put("login", params[0]);
             authUser.put("senha", params[1]);
             try {
-                final String url = "http://" + Config.SERVER_IP + ":" + Config.SERVER_PORT + "/mobileLogin";
+                final String url = "http://" + Config.SERVER_IP_GREat + ":" + Config.SERVER_PORT + "/mobileLogin";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 user = restTemplate.postForObject(url, authUser, User.class);
@@ -147,18 +148,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(User user) {
-            pbLogin.setVisibility(View.GONE);
+
             if (user.getLogin() != null) {
                 androidSession.setUserOnSession(Config.KEY_USER_LOGADO, user);
-
+                pgDialog.dismiss();
                 Intent intent = new Intent(context, PacienteActivity.class);
                 startActivity(intent);
                 finish();
 
                 Log.d(TAG, "Logando user no Sistema.");
             } else {
+                pgDialog.dismiss();
                 AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-                alertDialog.setTitle("MOrpHEuS Alerta!");
+                alertDialog.setIcon(R.drawable.ic_alert_circle_grey600_36dp);
+                alertDialog.setTitle("MOrpHEuS");
                 alertDialog.setMessage("Usuário não encontrado, tente novamente.");
                 alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
