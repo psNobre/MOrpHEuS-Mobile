@@ -8,10 +8,16 @@ import java.util.List;
 public class Sensor {
 
 	private String cib;
-	
-
 	private String nome;
-	
+	int idOfResource;
+
+	public int getIdOfResource() {
+		return idOfResource;
+	}
+
+	public void setIdOfResource(int idOfResource) {
+		this.idOfResource = idOfResource;
+	}
 
 	private List<Paciente> pacientes;
 

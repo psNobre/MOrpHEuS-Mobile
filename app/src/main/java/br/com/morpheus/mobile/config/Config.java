@@ -1,5 +1,11 @@
 package br.com.morpheus.mobile.config;
 
+
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
+
 import br.com.morpheus.mobile.model.Sensor;
 
 /**
@@ -7,7 +13,6 @@ import br.com.morpheus.mobile.model.Sensor;
  */
 public class Config {
 
-    //CASA:192.168.25.28 GREat:10.101.45.52
     public static final String SERVER_IP_GREat = "10.101.45.52";
     public static final String SERVER_IP_CASA = "192.168.25.28";
     public static final String SERVER_PORT = "8080";

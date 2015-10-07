@@ -5,17 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
-import org.androidannotations.annotations.UiThread;
-
 import java.util.ArrayList;
-
 import br.com.morpheus.mobile.adapters.AdapterCardSensor;
+import br.com.morpheus.mobile.config.Config;
 import br.com.morpheus.mobile.context.ContextKey;
 import br.com.morpheus.mobile.context.ContextManager;
 import br.com.morpheus.mobile.listeners.ContextListener;
@@ -33,25 +29,19 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
     private AndroidSession androidSession;
     private ArrayList<Sensor> sensors;
     private Sensor sensor;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paciente);
-
-        ContextManager.getInstance().connect(this.getApplicationContext(),
-                getResources().getResourcePackageName(R.string.app_name), new LoccamConnectedListener() {
-                    @Override
-                    public void onLoccamConnected() {
-                        ContextManager.getInstance().registerListener(PacienteActivity.this);
-                    }
-                });
+        intent = new Intent(PacienteActivity.this, ContentActivity.class);
 
         recyclerView = (RecyclerView) findViewById(R.id.card_list_view);
         recyclerView.setHasFixedSize(true);
         androidSession = new AndroidSession(PacienteActivity.this);
         sensors = new ArrayList<>();
-//////////////////////////////////////////////////////////////////////////////////////
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
@@ -59,11 +49,16 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
         adapterCardSensor = new AdapterCardSensor(PacienteActivity.this, sensors);
         recyclerView.setAdapter(adapterCardSensor);
 
+        getSupportActionBar().setTitle(androidSession.getUserFromSession(Config.KEY_USER_LOGADO).getNome());
+
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
 
             @Override
             public void onItemClick(View view, int position) {
-                Toast.makeText(getApplicationContext(), "Click", Toast.LENGTH_SHORT).show();
+                Sensor sensor = sensors.get(position);
+                intent.putExtra("context_sensor", sensor.getNome());
+                intent.putExtra("context_key", sensor.getCib());
+                startActivity(intent);
             }
 
             @Override
@@ -71,16 +66,21 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
                 Toast.makeText(getApplicationContext(), "Long Click", Toast.LENGTH_SHORT).show();
             }
         }));
-///////////////////////////////////////////////////////////////////////////////////
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
-
-
+        ContextManager.getInstance().connect(this.getApplicationContext(),
+                getResources().getResourcePackageName(R.string.app_name), new LoccamConnectedListener() {
+                    @Override
+                    public void onLoccamConnected() {
+                        ContextManager.getInstance().registerListener(PacienteActivity.this);
+                    }
+                });
     }
+
+
 
     @Override
     protected void onPause() {
@@ -122,11 +122,9 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
 
     @Override
     public void onContextReady(String data) {
-
         if (sensors.isEmpty()) { //tá dando mas tá errado mudar condição
             getSensores(data);
         }
-
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -134,7 +132,11 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
 
             }
         });
+    }
 
+    @Override
+    public String getContextKey() {
+        return ContextKey.getContextkeyGetCacs();
     }
 
     public void getSensores(String data){
@@ -148,11 +150,6 @@ public class PacienteActivity extends AppCompatActivity implements ContextListen
             sensor = ContextKey.getSensorInfo(cacs.get(i));
             sensors.add(sensor);
         }
-    }
-
-    @Override
-    public String getContextKey() {
-        return ContextKey.getContextkeyGetCacs();
     }
 
 }
