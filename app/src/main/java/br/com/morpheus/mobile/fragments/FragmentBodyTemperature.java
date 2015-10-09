@@ -3,13 +3,17 @@ package br.com.morpheus.mobile.fragments;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import br.com.morpheus.mobile.R;
+import br.com.morpheus.mobile.context.ContextKey;
+import br.com.morpheus.mobile.context.ContextManager;
 import br.com.morpheus.mobile.listeners.ContextListener;
 import br.com.morpheus.mobile.listeners.OnFragmentInteractionListener;
 
@@ -47,8 +51,24 @@ public class FragmentBodyTemperature extends Fragment implements ContextListener
     @Override
     public void onResume() {
         super.onResume();
-        textView.setText("TEMPERATURA");
+        ContextManager.getInstance().registerListener(this);
+        
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        ContextManager.getInstance().unregisterListener(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("CHAMEI DESTROY","CHAMEI PORRA");
+        ContextManager.getInstance().unregisterListener(this);
+    }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -83,13 +103,21 @@ public class FragmentBodyTemperature extends Fragment implements ContextListener
     }
 
     @Override
-    public void onContextReady(String data) {
+    public void onContextReady(final String data) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(data);
+            }
+        });
+
+        textView.setText(data);
 
     }
 
     @Override
     public String getContextKey() {
-        return null;
+        return ContextKey.CIB_BODY_TEMPERATURE;
     }
 
     @Override

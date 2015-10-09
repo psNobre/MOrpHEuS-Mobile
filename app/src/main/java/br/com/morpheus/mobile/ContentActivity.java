@@ -69,7 +69,7 @@ public class ContentActivity extends AppCompatActivity implements OnFragmentInte
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        finish();
+
     }
 
     @Override
