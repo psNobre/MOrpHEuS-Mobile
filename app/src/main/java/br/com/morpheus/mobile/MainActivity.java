@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             authUser.put("login", params[0]);
             authUser.put("senha", params[1]);
             try {
-                final String url = "http://" + Config.SERVER_IP_GREat + ":" + Config.SERVER_PORT + "/mobileLogin";
+                final String url = "http://" + Config.SERVER_IP_UFC + ":" + Config.SERVER_PORT + "/mobileLogin";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 user = restTemplate.postForObject(url, authUser, User.class);

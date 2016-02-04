@@ -14,7 +14,8 @@ import br.com.morpheus.mobile.model.Sensor;
 public class Config {
 
     public static final String SERVER_IP_GREat = "10.101.45.52";
-    public static final String SERVER_IP_CASA = "192.168.25.28";
+    public static final String SERVER_IP_CASA = "192.168.1.11";
+    public static final String SERVER_IP_UFC = "10.0.2.130";
     public static final String SERVER_PORT = "8080";
 
     /**

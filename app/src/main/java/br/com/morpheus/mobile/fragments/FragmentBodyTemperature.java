@@ -64,7 +64,6 @@ public class FragmentBodyTemperature extends Fragment implements ContextListener
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("CHAMEI DESTROY","CHAMEI PORRA");
         ContextManager.getInstance().unregisterListener(this);
     }
 
